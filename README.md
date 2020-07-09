@@ -1,2 +1,2 @@
-# sm-template
-Template for sourcepawn project
+# sm-edb
+Log connect and namechange events to database
