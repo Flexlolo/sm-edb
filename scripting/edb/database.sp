@@ -1,4 +1,5 @@
-Handle g_hDB;
+Database g_hDB;
+
 Handle g_hDB_Initialized;
 bool g_bDB_Initialized;
 
@@ -12,48 +13,34 @@ char g_sDB_Initialize_Query[][] =
 	"CREATE TABLE IF NOT EXISTS event_name (id INTEGER AUTO_INCREMENT, server_id INT, timestamp INT, steam_id VARCHAR(32), ip VARCHAR(32), player_name VARCHAR(32), player_name_new VARCHAR(32), PRIMARY KEY (id))"
 };
 
-
 stock bool DB_Connect()
 {
-	if (g_hDB != null)
-	{
-		lolo_CloseHandle(g_hDB);
-	}
-
-	char error[256];
-
-	g_hDB = SQL_Connect("edb", true, error, sizeof(error));
-
-	if (g_hDB == null)
-	{
-		LogError(error);
-		lolo_CloseHandle(g_hDB);
-		return false;
-	}
-
-	return true;
+	Database.Connect(DB_Connect_CB, "edb");
 }
 
-stock void DB_Initialize()
+public void DB_Connect_CB(Database db, const char[] error, any data)
 {
-	if (!DB_Connect())
+	if (db == null || error[0])
 	{
-		SetFailState("Unable to connect to DB.");
+		LogError(error);
+		SetFailState(error);
 	}
-	
+
+	g_hDB = db;
+	DB_Init();
+}
+
+stock void DB_Init()
+{
 	for (int i; i < sizeof(g_sDB_Initialize_Query); i++)
 	{
-		SQL_TQuery(g_hDB, DB_Initialize_CB, g_sDB_Initialize_Query[i]);
+		g_hDB.Query(DB_Init_CB, g_sDB_Initialize_Query[i]);
 	}
 }
 
-public void DB_Initialize_CB(Handle owner, Handle hndl, const char[] error, any data)
+public void DB_Init_CB(Database db, DBResultSet results, const char[] error, any data)
 {
-	if (hndl == null)
-	{
-		LogError(error);
-	}
-	else
+	if (db != null)
 	{
 		g_iDB_Steps++;
 		g_bDB_Initialized = (g_iDB_Steps == DB_STEPS);
@@ -66,7 +53,7 @@ public void DB_Initialize_CB(Handle owner, Handle hndl, const char[] error, any 
 	}
 }
 
-public void DB_Empty_Callback(Handle owner, Handle hndl, const char[] error, any data)
+public void DB_Query_CB(Database db, DBResultSet results, const char[] error, any data)
 {
-	if (hndl == null) LogError(error);
+	if (db == null) LogError(error);	
 }

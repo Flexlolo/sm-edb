@@ -67,7 +67,7 @@ public void OnConfigsExecuted()
 		SetFailState("edb.cfg is not configured.");
 	}
 
-	DB_Initialize();
+	DB_Connect();
 }
 
 public void DB_Initialized()
